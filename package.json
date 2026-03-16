@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "url": "^0.11.4",
+    "vitepress": "^1.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0"
+  }
+}
