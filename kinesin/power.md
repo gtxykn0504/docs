@@ -5,7 +5,7 @@ order: 4
 
 # 权限获取
 
-根据插件权限机制，Kinesin需要获取以下权限：
+Kinesin需要获取以下权限：
 
 ## 1. storage（存储）
 
