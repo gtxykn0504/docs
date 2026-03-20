@@ -49,6 +49,13 @@ type HeadingBucket = {
   entries: OrderedSidebarItem[]
 }
 
+type FrontmatterMeta = {
+  order: number
+  heading?: string
+  subheading?: string
+  subOrder?: number
+}
+
 function sortByOrderAndText<T extends { order: number; text: string }>(a: T, b: T) {
   if (a.order === b.order) return a.text.localeCompare(b.text)
   return a.order - b.order
@@ -93,6 +100,80 @@ function toLink(relativePath: string) {
   return normalizeLink(relativePath ? `/${relativePath}` : '/')
 }
 
+function toDirectoryLink(relativePath: string) {
+  if (!relativePath) return '/'
+  return normalizeLink(`/${relativePath}/`)
+}
+
+function toDocMeta(absDir: string, relativeDir: string, fileName: string): SidebarDocMeta {
+  const full = path.join(absDir, fileName)
+  const { order, title } = readFrontmatterAndTitle(full)
+  const baseName = path.basename(fileName, '.md')
+  const rel = relativeDir ? `${relativeDir}/${baseName}` : baseName
+
+  // index.md -> 目录根路径（保持尾斜杠，确保 VitePress active/prev-next 正常匹配）
+  const link = baseName === 'index' ? toDirectoryLink(relativeDir) : toLink(rel)
+
+  return {
+    order,
+    text: title,
+    link
+  }
+}
+
+function toOrderedSidebarItem(doc: SidebarDocMeta): OrderedSidebarItem {
+  return {
+    order: doc.order,
+    text: doc.text,
+    item: { text: doc.text, link: doc.link },
+    source: 'doc'
+  }
+}
+
+function toOrderedSidebarItems(docs: SidebarDocMeta[]): OrderedSidebarItem[] {
+  return docs.map(toOrderedSidebarItem)
+}
+
+function createSubheadingEntry(
+  label: string,
+  order: number,
+  subOrder: number | undefined,
+  items: SidebarItem[]
+): OrderedSidebarItem {
+  return {
+    order,
+    text: label,
+    subOrder,
+    source: 'subheading',
+    item: {
+      text: label,
+      collapsed: true,
+      items
+    }
+  }
+}
+
+function pushEntryToContainer(
+  entry: OrderedSidebarItem,
+  rootEntries: OrderedSidebarItem[],
+  headingBuckets: Map<string, HeadingBucket>,
+  targetHeadingKey?: string
+) {
+  if (targetHeadingKey && headingBuckets.has(targetHeadingKey)) {
+    headingBuckets.get(targetHeadingKey)!.entries.push(entry)
+    return
+  }
+
+  rootEntries.push(entry)
+}
+
+function readIndexMeta(dirAbsPath: string): FrontmatterMeta | undefined {
+  const indexPath = path.join(dirAbsPath, 'index.md')
+  if (!fs.existsSync(indexPath)) return undefined
+  const { order, heading, subheading, subOrder } = readFrontmatterAndTitle(indexPath)
+  return { order, heading, subheading, subOrder }
+}
+
 function readFrontmatterAndTitle(filePath: string) {
   const raw = fs.readFileSync(filePath, 'utf8')
   const fmMatch = raw.match(/^---\s*([\s\S]*?)\s*---/)
@@ -132,35 +213,12 @@ function listMarkdownFiles(absDir: string, includeIndex: boolean) {
 
 function listMarkdownItems(absDir: string, relativeDir: string, includeIndex: boolean) {
   return listMarkdownFiles(absDir, includeIndex)
-    .map((name) => {
-      const full = path.join(absDir, name)
-      const { order, title } = readFrontmatterAndTitle(full)
-      const baseName = path.basename(name, '.md')
-      const rel = relativeDir ? `${relativeDir}/${baseName}` : baseName
-
-      // index.md -> 目录根路径
-      const link = baseName === 'index' ? toLink(relativeDir) : toLink(rel)
-
-      return {
-        order,
-        text: title,
-        link
-      }
-    })
+    .map((name) => toDocMeta(absDir, relativeDir, name))
     .sort(sortByOrderAndText)
 }
 
 function toSidebarLinkItems(items: SidebarDocMeta[]): SidebarItem[] {
   return items.map(({ text, link }): SidebarItem => ({ text, link }))
-}
-
-function toOrderedSidebarItems(items: SidebarDocMeta[]): OrderedSidebarItem[] {
-  return items.map((doc) => ({
-    order: doc.order,
-    text: doc.text,
-    item: { text: doc.text, link: doc.link },
-    source: 'doc'
-  }))
 }
 
 function sortBySubOrderAndText<T extends { subOrder?: number; text: string }>(a: T, b: T) {
@@ -236,24 +294,8 @@ function generateSidebarGroups(entry: SidebarAutoItem): OrderedGroup[] {
     subOrder: number | undefined,
     items: SidebarItem[]
   ) => {
-    const entry: OrderedSidebarItem = {
-      order,
-      text: label,
-      subOrder,
-      source: 'subheading',
-      item: {
-        text: label,
-        collapsed: true,
-        items
-      }
-    }
-
-    if (targetHeadingKey && headingBuckets.has(targetHeadingKey)) {
-      headingBuckets.get(targetHeadingKey)!.entries.push(entry)
-      return
-    }
-
-    rootEntries.push(entry)
+    const entry = createSubheadingEntry(label, order, subOrder, items)
+    pushEntryToContainer(entry, rootEntries, headingBuckets, targetHeadingKey)
   }
 
   const walkDirectories = (parentAbsDir: string, parentRelativeDir: string, activeHeadingKey?: string) => {
@@ -264,10 +306,7 @@ function generateSidebarGroups(entry: SidebarAutoItem): OrderedGroup[] {
       const childAbsDir = path.join(parentAbsDir, dirent.name)
       const childRelativeDir = parentRelativeDir ? `${parentRelativeDir}/${dirent.name}` : dirent.name
       const childItems = listMarkdownItems(childAbsDir, childRelativeDir, true)
-      const indexPath = path.join(childAbsDir, 'index.md')
-      const meta = fs.existsSync(indexPath)
-        ? readFrontmatterAndTitle(indexPath)
-        : undefined
+      const meta = readIndexMeta(childAbsDir)
 
       let nextActiveHeadingKey = activeHeadingKey
 
