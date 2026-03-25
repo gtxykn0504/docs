@@ -24,6 +24,7 @@ Kinesin已上架主流浏览器插件商店，您可一键安装使用。
 
 1. [Edge](https://microsoftedge.microsoft.com/addons/detail/kinesin/bfnnclfgealppofiiimocnpiombnoolg)
 2. [Firefox](https://addons.mozilla.org/zh-CN/firefox/addon/kinesin/)
+3. [Chrome](https://chromewebstore.google.com/detail/kinesin/pefckpebehibophdkbjkppcpocpbdhfl?authuser=0&hl=zh-CN)
 
 ## 与我们一起
 
