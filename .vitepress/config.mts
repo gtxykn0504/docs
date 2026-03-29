@@ -6,6 +6,10 @@ const sidebarAuto: SidebarAutoItem[] = [
   {
     text: 'Kinesin',
     path: '/kinesin',
+  },
+  {
+    text: 'Columba',
+    path: '/columba',
   }
 ]
 
