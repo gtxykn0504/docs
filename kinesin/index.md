@@ -28,4 +28,4 @@ Kinesin已上架主流浏览器插件商店，您可一键安装使用。
 
 ## 与我们一起
 
-个人的力量总是有限的，Kinesin 仍有许多可以改进之处。如果您有任何建议、想法或遇到了问题，欢迎在 [GitHub 仓库](https://github.com/gtxykn0504/kinesin-redirector) 中提出 Issue 或通过 Pull Request 贡献代码。
+个人的力量总是有限的，Kinesin 仍有许多可以改进之处。如果您有任何建议、想法或遇到了问题，欢迎在 [GitHub 仓库](https://github.com/gtxykn0504/kinesin) 中提出 Issue 或通过 Pull Request 贡献代码。

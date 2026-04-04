@@ -19,6 +19,7 @@ const sidebarByPath = generateSidebarByPath(sidebarAuto)
 export default defineConfig({
   title: 'KeDocs',
   description: '代码跃海 世界同潮',
+  cleanUrls: true,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
