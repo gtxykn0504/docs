@@ -1,20 +1,18 @@
 ---
 outline: deep
-order: 4
+order: 1
+heading: 开发
+sub-order: 4
 ---
 
-# 与我们一起
+# 模块详解
 
 个人的力量总是有限的，Columba 仍有许多可以改进之处。如果您有任何建议、想法或遇到了问题，欢迎在 [GitHub 仓库](https://github.com/gtxykn0504/columba) 中提出 Issue 或通过 Pull Request 贡献代码。
-
-
-
-## 模块详解
 
 > [!TIP]
 > 实在写不动了，这一部分由AI编写，本人审核了下。如果有问题，欢迎反馈，感激不尽
 
-### 常量定义
+## 常量定义
 
 ```python
 CONFIG_FILE = "config.ini"
@@ -24,9 +22,7 @@ ICON_FILE = "columba.ico"
 
 - 定义配置文件名、日志文件名、图标文件名。程序运行时从当前目录读取这些文件。
 
----
-
-### 日志配置
+## 日志配置
 
 ```python
 handler = RotatingFileHandler(LOG_FILE, maxBytes=3*1024*1024, backupCount=0, encoding='utf-8')
@@ -45,9 +41,7 @@ log = logging.info
 - 同时输出到控制台（`StreamHandler`），方便调试。
 - `log` 简写为 `logging.info` 的引用，用于记录日志。
 
----
-
-### 工具函数 `show_error`
+## 工具函数 `show_error`
 
 ```python
 def show_error(msg):
@@ -58,11 +52,9 @@ def show_error(msg):
 - `0x10` 对应 `MB_ICONERROR`，显示错误图标。
 - 用于提权失败、启动错误等场景，给用户明确提示。
 
----
+## 权限检查与提权
 
-### 权限检查与提权
-
-####  is_admin
+###  is_admin
 
 ```python
 def is_admin():
@@ -75,7 +67,7 @@ def is_admin():
 - 调用 `Shell32.IsUserAnAdmin` 判断当前进程是否以管理员身份运行。
 - 异常时返回 `False`（如未找到函数）。
 
-#### run_as_admin
+### run_as_admin
 
 ```python
 def run_as_admin():
@@ -112,11 +104,9 @@ def run_as_admin():
   - 其他值表示失败，显示包含错误码的提示框（异常时错误码显示“未知”）。
 - **注意**：调用后当前进程立即退出（`sys.exit(0)`），新进程以管理员身份运行。
 
----
+## 配置管理
 
-### 配置管理
-
-#### check_config
+### check_config
 
 ```python
 def check_config():
@@ -127,7 +117,7 @@ def check_config():
 
 - 检查配置文件是否存在，不存在则记录日志并退出程序。
 
-#### load_config
+### load_config
 
 ```python
 def load_config():
@@ -151,7 +141,7 @@ def load_config():
 
 ---
 
-### 登录类型描述 `get_logon_type_desc`
+## 登录类型描述 `get_logon_type_desc`
 
 ```python
 def get_logon_type_desc(logon_type):
@@ -172,9 +162,8 @@ def get_logon_type_desc(logon_type):
 - 将数字登录类型代码转换为可读的中文描述（带英文原文）。
 - 若代码不在映射表中，返回“未知类型 (代码)”。
 
----
 
-### 邮件发送 `send_mail`
+## 邮件发送 `send_mail`
 
 ```python
 def send_mail(smtp_cfg, msg_cfg, event_data, test=False):
@@ -231,11 +220,10 @@ def send_mail(smtp_cfg, msg_cfg, event_data, test=False):
   - 否则直接使用 `SMTP_SSL` 建立 SSL 连接（通常用于 465 端口）。
 - **异常处理**：任何发送失败均记录日志并返回 `False`，不影响主流程。
 
----
 
-### `LoginMonitor` 类（安全日志监听）
+## `LoginMonitor` 类（安全日志监听）
 
-#### __ init __
+### __ init __
 
 ```python
 def __init__(self, callback, allowed_logon_types):
@@ -250,7 +238,7 @@ def __init__(self, callback, allowed_logon_types):
 - `processed`：字典，键为事件记录号，用于去重。限制大小 1000，自动清理。
 - `allowed_logon_types`：允许的登录类型集合。
 
-#### _parse_logon_type
+### _parse_logon_type
 
 ```python
 def _parse_logon_type(self, strings, index):
@@ -271,7 +259,7 @@ def _parse_logon_type(self, strings, index):
 - 如果该索引不存在或不是数字，则遍历整个字符串列表，找到第一个纯数字项作为登录类型（兼容某些旧系统）。
 - 返回整数或 `None`。
 
-#### _parse_event
+### _parse_event
 
 ```python
 def _parse_event(self, event):
@@ -285,7 +273,7 @@ def _parse_event(self, event):
   - 4625：用户名 5，域 6，状态码 7，子状态 9，登录类型索引 10，源 IP 19。
 - 返回包含所有所需字段的字典，若解析失败返回 `None`。
 
-#### run
+### run
 
 ```python
 def run(self):
@@ -334,7 +322,7 @@ def run(self):
   - 若无异常，休眠 2 秒后继续；若异常，休眠 5 秒后重试。
 - **退出**：`CoUninitialize` 释放 COM。
 
-#### stop
+### stop
 
 ```python
 def stop(self):
@@ -345,9 +333,9 @@ def stop(self):
 
 ---
 
-### `TrayApp` 类（托盘应用）
+## `TrayApp` 类（托盘应用）
 
-#### __ init __
+### __ init __
 
 ```python
 def __init__(self):
@@ -358,7 +346,7 @@ def __init__(self):
 
 - 加载配置，初始化实例变量。
 
-#### send_notification
+### send_notification
 
 ```python
 def send_notification(self, data):
@@ -367,7 +355,7 @@ def send_notification(self, data):
 
 - 事件回调函数，调用邮件发送。
 
-#### test_mail
+### test_mail
 
 ```python
 def test_mail(self):
@@ -377,7 +365,7 @@ def test_mail(self):
 
 - 发送测试邮件，不依赖事件数据。
 
-#### edit_config
+### edit_config
 
 ```python
 def edit_config(self):
@@ -395,7 +383,7 @@ def edit_config(self):
 - 用记事本打开 `config.ini`，通过 `CREATE_NO_WINDOW` 避免控制台窗口。
 - 重新加载配置，并更新监控线程的允许类型（如果监控已启动）。
 
-#### view_log
+### view_log
 
 ```python
 def view_log(self):
@@ -408,7 +396,7 @@ def view_log(self):
 
 - 用记事本打开日志文件，同样避免控制台窗口。
 
-#### on_quit
+### on_quit
 
 ```python
 def on_quit(self, icon):
@@ -421,7 +409,7 @@ def on_quit(self, icon):
 
 - 停止监控线程，关闭托盘图标，强制退出进程（`os._exit` 确保立即终止）。
 
-#### run
+### run
 
 ```python
 def run(self):
@@ -453,9 +441,7 @@ def run(self):
 - 检查图标文件是否存在，加载失败则退出。
 - 构建托盘菜单，创建托盘图标并进入消息循环（`icon.run()` 阻塞，直到调用 `icon.stop()`）。
 
----
-
-### `main` 函数
+## `main` 函数
 
 ```python
 def main():
@@ -479,9 +465,8 @@ def main():
 - 若已管理员运行，创建 `TrayApp` 实例并运行。
 - 捕获所有未处理异常，记录日志并暂停，方便调试。
 
----
 
-### 入口
+## 入口
 
 ```python
 if __name__ == "__main__":
@@ -491,18 +476,4 @@ if __name__ == "__main__":
 - 程序入口，调用 `main`。
 
 
-## 依赖与安装
 
-### 开发环境依赖
-
-```bash
-pip install pywin32 pystray pillow
-```
-
-### 打包（Nuitka）
-
-可使用以下命令生成独立可执行文件：
-
-```bash
-nuitka --standalone --windows-console-mode=disable --windows-uac-admin --include-data-files=config.ini=./config.ini --include-data-files=login_notifier.log=./login_notifier.log --include-data-files=columba.ico=./columba.ico --windows-icon-from-ico=columba.ico 1.py
-```

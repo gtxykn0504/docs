@@ -8,6 +8,10 @@ const sidebarAuto: SidebarAutoItem[] = [
     path: '/kinesin',
   },
   {
+    text: 'Rainbox',
+    path: '/rainbox',
+  },
+  {
     text: 'Columba',
     path: '/columba',
   }
@@ -23,6 +27,7 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
+      { text: '隐私协议', link: '/privacy' },
       { text: '知识库', link: 'https://kegongteng.cn' },
       { text: '联系', link: 'mailto:i@kegongteng.cn' },
     ],
