@@ -40,6 +40,10 @@ export default defineConfig({
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/gtxykn0504' }
-    ]
+    ],
+
+    search: {
+      provider: 'local'
+    }
   }
 })

@@ -30,7 +30,7 @@ nuitka --standalone --windows-console-mode=force --include-package=charset_norma
 ```
 
 ## 安装包
-[Inno Setup](https://jrsoftware.org/isinfo.php)是一个非常好用的安装包制作软件。您可以参考一下步骤编辑iss脚本为安装包添加"添加到用户环境变量 PATH"选项：
+[Inno Setup](https://jrsoftware.org/isinfo.php)是一个非常好用的安装包制作软件。您可以参考以下步骤编辑iss脚本为安装包添加"添加到用户环境变量 PATH"选项：
 
 1. 在`[Setup]`中，添加`gesEnvironment=yes`
 2. 在`[Tasks]`中，添加选项
