@@ -44,6 +44,10 @@ export default defineConfig({
 
     search: {
       provider: 'local'
+    },
+
+    footer: {
+      copyright: 'Copyright © 2023-2026 Kegongteng'
     }
   }
 })

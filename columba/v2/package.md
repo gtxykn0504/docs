@@ -1,22 +1,16 @@
 ---
 outline: deep
-order: 2
+sub-order: 3
 ---
 
-# 依赖与打包
-
-## 开发环境依赖
-
-```bash
-pip install pywin32 pystray pillow
-```
+# 打包与安装包
 
 ## 打包（Nuitka）
 
 可使用以下命令生成独立可执行文件：
 
 ```bash
-nuitka --standalone --windows-console-mode=disable --windows-uac-admin --include-data-files=config.ini=./config.ini --include-data-files=login_notifier.log=./login_notifier.log --include-data-files=columba.ico=./columba.ico --windows-icon-from-ico=columba.ico 1.py
+nuitka --standalone --windows-console-mode=disable --windows-uac-admin --include-data-files=config.ini=./config.ini --include-data-files=login_notifier.log=./login_notifier.log --include-data-files=columba.ico=./columba.ico --include-data-files=failure_login.json=./failure_login.json --windows-icon-from-ico=columba.ico 2.py
 ```
 
 ## 制作安装包（Inno Setup）

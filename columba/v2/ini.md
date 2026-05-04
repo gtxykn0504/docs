@@ -1,6 +1,6 @@
 ---
 outline: deep
-order: 3
+sub-order: 2
 ---
 
 # 配置文件说明
@@ -25,8 +25,9 @@ body_success =
 subject_failure = 
 body_failure = 
 
-[FILTER]
+[SETTINGS]
 logon_types = 
+ban_frequency = 
 ```
 
 ---
@@ -54,8 +55,7 @@ logon_types =
 |-----------------|--------------------|----------------------------------------------------------------------|
 | subject_success | 成功登录邮件主题   | `[通知] 用户 {username} 已登录 {computer}`                           |
 | body_success    | 成功登录邮件正文   | `用户 {username} 于 {time} 从 {source_ip} 登录 {computer}，登录类型：{logon_type_desc}` |
-| subject_failure | 失败登录邮件主题   | `[告警] 用户 {username} 登录失败`                                    |
-| body_failure    | 失败登录邮件正文   | `用户 {username} 于 {time} 从 {source_ip} 登录失败，原因：{failure_reason}` |
+
 
 ### 可用变量
 
@@ -73,11 +73,12 @@ logon_types =
 
 ---
 
-## [FILTER] 事件过滤
+## [SETTINGS] 配置
 
 | 键名         | 说明                                                              | 默认值     |
 |--------------|-------------------------------------------------------------------|------------|
 | logon_types  | 需要监控的登录类型列表，用英文逗号分隔，仅支持数字代码。留空则监控所有类型。 | `2,7,10`   |
+| ban_frequency  | IP失败最大次数，超过添加至防火墙黑名单。留空或为0则无加入黑名单，只记录。 | `5`   |
 
 ### 常用登录类型代码
 
@@ -105,8 +106,9 @@ from_addr = columba@qq.com
 to_addr = admin@example.com, backup@example.com
 use_tls = false
 
-[FILTER]
+[SETTINGS]
 logon_types = 2,7,10
+ban_frequency = 5
 
 [MESSAGE]
 subject_success = Columba 登录通知 - 成功
@@ -115,12 +117,5 @@ body_success = 用户 {username} 在计算机 {computer} 上登录成功
 			时间: {time}
 			来源 IP: {source_ip}
 			进程: {process_name}
-subject_failure = Columba 登录通知 - 失败
-body_failure = 用户 {username} 在计算机 {computer} 上的登录尝试失败
-			登录类型: {logon_type_desc}
-			时间: {time}
-			来源 IP: {source_ip}
-			失败原因: {failure_reason}
-```
 
 ---

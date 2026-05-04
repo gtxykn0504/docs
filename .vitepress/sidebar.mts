@@ -32,6 +32,7 @@ type SidebarDocMeta = {
   order: number
   text: string
   link: string
+  subOrder?: number
 }
 
 type OrderedSidebarItem = {
@@ -39,7 +40,7 @@ type OrderedSidebarItem = {
   text: string
   item: SidebarItem
   subOrder?: number
-  source: 'doc' | 'subheading'
+  source: 'doc'
 }
 
 type HeadingBucket = {
@@ -107,7 +108,7 @@ function toDirectoryLink(relativePath: string) {
 
 function toDocMeta(absDir: string, relativeDir: string, fileName: string): SidebarDocMeta {
   const full = path.join(absDir, fileName)
-  const { order, title } = readFrontmatterAndTitle(full)
+  const { order, title, subOrder } = readFrontmatterAndTitle(full)
   const baseName = path.basename(fileName, '.md')
   const rel = relativeDir ? `${relativeDir}/${baseName}` : baseName
 
@@ -118,6 +119,8 @@ function toDocMeta(absDir: string, relativeDir: string, fileName: string): Sideb
     order,
     text: title,
     link
+    ,
+    subOrder
   }
 }
 
@@ -126,6 +129,7 @@ function toOrderedSidebarItem(doc: SidebarDocMeta): OrderedSidebarItem {
     order: doc.order,
     text: doc.text,
     item: { text: doc.text, link: doc.link },
+    subOrder: doc.subOrder,
     source: 'doc'
   }
 }
@@ -134,24 +138,8 @@ function toOrderedSidebarItems(docs: SidebarDocMeta[]): OrderedSidebarItem[] {
   return docs.map(toOrderedSidebarItem)
 }
 
-function createSubheadingEntry(
-  label: string,
-  order: number,
-  subOrder: number | undefined,
-  items: SidebarItem[]
-): OrderedSidebarItem {
-  return {
-    order,
-    text: label,
-    subOrder,
-    source: 'subheading',
-    item: {
-      text: label,
-      collapsed: true,
-      items
-    }
-  }
-}
+// NOTE: subheading/collapsible groups removed in refactor. Files' `sub-order` is used
+// to position items within their heading instead.
 
 function pushEntryToContainer(
   entry: OrderedSidebarItem,
@@ -229,12 +217,8 @@ function sortBySubOrderAndText<T extends { subOrder?: number; text: string }>(a:
 }
 
 function buildOrderedItems(entries: OrderedSidebarItem[]): SidebarItem[] {
-  const pinned = entries
-    .filter((entry) => entry.source === 'subheading' && entry.subOrder !== undefined)
-    .sort(sortBySubOrderAndText)
-  const floating = entries
-    .filter((entry) => entry.source !== 'subheading' || entry.subOrder === undefined)
-    .sort(sortByOrderAndText)
+  const pinned = entries.filter((entry) => entry.subOrder !== undefined).sort(sortBySubOrderAndText)
+  const floating = entries.filter((entry) => entry.subOrder === undefined).sort(sortByOrderAndText)
 
   const arranged = [...floating]
 
@@ -287,16 +271,7 @@ function generateSidebarGroups(entry: SidebarAutoItem): OrderedGroup[] {
     })
   }
 
-  const addSubheadingToTarget = (
-    targetHeadingKey: string | undefined,
-    label: string,
-    order: number,
-    subOrder: number | undefined,
-    items: SidebarItem[]
-  ) => {
-    const entry = createSubheadingEntry(label, order, subOrder, items)
-    pushEntryToContainer(entry, rootEntries, headingBuckets, targetHeadingKey)
-  }
+  // subheading handling removed
 
   const walkDirectories = (parentAbsDir: string, parentRelativeDir: string, activeHeadingKey?: string) => {
     const childDirs = fs.readdirSync(parentAbsDir, { withFileTypes: true })
@@ -316,11 +291,8 @@ function generateSidebarGroups(entry: SidebarAutoItem): OrderedGroup[] {
         nextActiveHeadingKey = headingKey
       }
 
-      if (meta?.subheading && childItems.length) {
-        const subOrder = meta.subOrder ?? meta.order
-        const parentHeadingKey = meta?.heading ? nextActiveHeadingKey : activeHeadingKey
-        addSubheadingToTarget(parentHeadingKey, meta.subheading, subOrder, meta.subOrder, toSidebarLinkItems(childItems))
-      }
+      // ignore `subheading` frontmatter; child files may use `sub-order` to control
+      // their position within the parent heading
 
       walkDirectories(childAbsDir, childRelativeDir, nextActiveHeadingKey)
     }
